@@ -1,7 +1,5 @@
-import itertools
 import numpy as np
 import mdtraj
-import permeability as prm
 import grid_analysis
 import bilayer_analysis_functions
 import simtk.unit as u
