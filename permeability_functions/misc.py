@@ -1,3 +1,4 @@
+import numpy as np
 import simtk.unit as u
 def validate_array_type(array, desired_unit):
     """ Ensure that arrays are u.Quantity, but elements are just floats
