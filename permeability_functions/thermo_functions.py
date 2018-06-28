@@ -15,12 +15,12 @@ def analyze_force_timeseries(times, forces, meanf_name, fcorr_name,
                             correlation_length=300*u.picosecond):
     """ Given a timeseries of forces, compute force autocorrealtions and means"""
     mean_force = np.mean(forces)
-    times = misc.validate_array_type(times, u.picosecond)
+    times = misc.validate_quantity_type(times, u.picosecond)
     dstep = times[1] - times[0]
     funlen = int(correlation_length/dstep)
     FACF = acf(forces, funlen, dstart=10)
     time_intervals = np.arange(0, funlen*dstep._value, dstep._value )*dstep.unit
-    time_intevals = misc.validate_array_type(time_intervals, dstep.unit)
+    time_intevals = misc.validate_quantity_type(time_intervals, dstep.unit)
     times_facf = np.column_stack((time_intervals, FACF))
     np.savetxt(fcorr_name, times_facf)
     np.savetxt(meanf_name, [mean_force._value])
@@ -82,15 +82,15 @@ def compute_free_energy_profile(forces, distances):
     -----
     Forces and distances are u.Quantity, but the elements should just be floats
     """
-    forces = misc.validate_array_type(forces, (u.kilocalorie / (u.mole * u.angstrom)))
-    distances = misc.validate_array_type(distances, u.angstrom)
+    forces = misc.validate_quantity_type(forces, (u.kilocalorie / (u.mole * u.angstrom)))
+    distances = misc.validate_quantity_type(distances, u.angstrom)
 
     return -scipy.integrate.cumtrapz(forces._value, x=distances._value, initial=0)*forces.unit*distances.unit
 
 def compute_diffusion_coefficient(intfacf, 
                                 kb=1.987e-3 * u.kilocalorie / (u.mole * u.kelvin),
                                 temp=305*u.kelvin):
-    intfacf = misc.validate_array_type(intfacf, (u.kilocalorie / (u.mole * u.angstrom))**2 * u.picosecond)
+    intfacf = misc.validate_quantity_type(intfacf, (u.kilocalorie / (u.mole * u.angstrom))**2 * u.picosecond)
     #if not isinstance(intfacf, u.Quantity):
     #    intfacf = (intfacf 
     #            * (u.kilocalorie / (u.mole * u.angstrom))**2 * u.picosecond)
