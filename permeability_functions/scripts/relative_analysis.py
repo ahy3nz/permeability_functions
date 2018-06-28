@@ -31,13 +31,13 @@ for sim_number in range(n_sims):
                                             tracers,
                                             d_from_local_i_list, d_from_leaflet_i_list)):
         forceout_id = sim_number + (i*n_sims)
-        data = np.loadtxt('Sim{0}/forceout{1}.txt'.format(sim_number, forceout_id))
+        data = np.loadtxt('Sim{0}/forceout{1}.dat'.format(sim_number, forceout_id))
         times = data[:,1] * u.femtosecond
         forces = data[:,2] * u.kilocalorie/(u.mole*u.angstrom)
         mean_force , time_intervals, facf = thermo_functions.analyze_force_timeseries(
                 times, forces, 
-                meanf_name='Sim{0}/meanforce{1}.txt'.format(sim_number, i), 
-                fcorr_name='Sim{0}/fcorr{1}.txt'.format(sim_number, i))
+                meanf_name='Sim{0}/meanforce{1}.dat'.format(sim_number, i), 
+                fcorr_name='Sim{0}/fcorr{1}.dat'.format(sim_number, i))
         intF, intFval = thermo_functions.integrate_facf_over_time(time_intervals, facf)
         local_tuples.append((d_from_local_i, mean_force, time_intervals, intFval))
         leaflet_tuples.append((d_from_leaflet_i, mean_force, time_intervals, intFval))

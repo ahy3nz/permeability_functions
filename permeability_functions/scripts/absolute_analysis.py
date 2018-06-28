@@ -8,7 +8,7 @@ import permeability_functions.misc as misc
 import numpy as np
 import simtk.unit as u
 n_sims = 5
-reaction_coordinates = np.loadtxt('z_windows.txt') * u.nanometer
+reaction_coordinates = np.loadtxt('z_windows.out') * u.nanometer
 n_windows = len(reaction_coordinates)
 window_forces = np.zeros(n_windows)
 window_facf_integrals = np.zeros(n_windows)
@@ -16,13 +16,13 @@ for sim_number in range(n_sims):
     tracers = np.loadtxt('Sim{0}/tracers.out'.format(sim_number), dtype=int) - 1
     for i in enumerate(tracers):
         forceout_id = sim_number + (i*n_sims)
-        data = np.loadtxt('Sim{0}/forceout{1}.txt'.format(sim_number, forceout_id))
+        data = np.loadtxt('Sim{0}/forceout{1}.dat'.format(sim_number, forceout_id))
         times = data[:,1] * u.femtosecond
         forces = data[:,2] * u.kilocalorie/(u.mole*u.angstrom)
         mean_force , time_intervals, facf = thermo_functions.analyze_force_timeseries(
                 times, forces, 
-                meanf_name='Sim{0}/meanforce{1}.txt'.format(sim_number, forceout_id), 
-                fcorr_name='Sim{0}/fcorr{1}.txt'.format(sim_number, forceout_id))
+                meanf_name='Sim{0}/meanforce{1}.dat'.format(sim_number, forceout_id), 
+                fcorr_name='Sim{0}/fcorr{1}.dat'.format(sim_number, forceout_id))
         intF, intFval = thermo_functions.integrate_facf_over_time(time_intervals, 
                                                                     facf)
         window_forces[forceout_id] = mean_force
