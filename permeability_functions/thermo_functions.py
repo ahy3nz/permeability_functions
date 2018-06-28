@@ -8,8 +8,8 @@ import permeability_functions.misc as misc
 
 # 1) Compute means and force correlations (analyze_sweeps)
 # 2) Integrate force correlations  (integrate_acf_over_time)
-# 3) For each window, recover the tracer and get the distances from interface
-# 4) Integrate mean forces and force autocorrelations based on these distances
+# 3) For each window, recover the tracer and get the reaction_coordinates from interface
+# 4) Integrate mean forces and force autocorrelations based on these reaction_coordinates
 
 def analyze_force_timeseries(times, forces, meanf_name, fcorr_name,
                             correlation_length=300*u.picosecond):
@@ -73,37 +73,32 @@ def integrate_facf_over_time(times, facf, average_fraction=0.1):
 
     return intF, intFval
 
-def compute_free_energy_profile(forces, distances):
+def compute_free_energy_profile(forces, reaction_coordinates):
     """
     forces : array of floats, u.Quantity
-    distances: array of floats, u.Quantity
+    reaction_coordinates: array of floats, u.Quantity
 
     Notes
     -----
-    Forces and distances are u.Quantity, but the elements should just be floats
+    Forces and reaction_coordinates are u.Quantity, but the elements should just be floats
     """
     forces = misc.validate_quantity_type(forces, (u.kilocalorie / (u.mole * u.angstrom)))
-    distances = misc.validate_quantity_type(distances, u.angstrom)
+    reaction_coordinates = misc.validate_quantity_type(reaction_coordinates, u.angstrom)
 
-    return -scipy.integrate.cumtrapz(forces._value, x=distances._value, initial=0)*forces.unit*distances.unit
+    return -scipy.integrate.cumtrapz(forces._value, x=reaction_coordinates._value, initial=0)*forces.unit*reaction_coordinates.unit
 
 def compute_diffusion_coefficient(intfacf, 
                                 kb=1.987e-3 * u.kilocalorie / (u.mole * u.kelvin),
                                 temp=305*u.kelvin):
     intfacf = misc.validate_quantity_type(intfacf, (u.kilocalorie / (u.mole * u.angstrom))**2 * u.picosecond)
-    #if not isinstance(intfacf, u.Quantity):
-    #    intfacf = (intfacf 
-    #            * (u.kilocalorie / (u.mole * u.angstrom))**2 * u.picosecond)
-    #else:
-    #    intfacf = intfacf.in_units_of((
-    #                    u.kilocalorie / (u.mole * u.angstrom))**2 * u.picosecond)
+    
 
     RT2 = (kb*temp)**2
     diffusion_coefficient = (RT2/intfacf).in_units_of(u.nanometer**2/u.second)
 
     return diffusion_coefficient
 
-def compute_resistance_profile(fe_profile, diff_profile, distances,
+def compute_resistance_profile(fe_profile, diff_profile, reaction_coordinates,
                                 kb=1.987e-3 * u.kilocalorie / (u.mole * u.kelvin),
                                 temp=305*u.kelvin):
     if not isinstance(fe_profile, u.Quantity):
@@ -117,7 +112,7 @@ def compute_resistance_profile(fe_profile, diff_profile, distances,
         diff_profile = diff_profile.in_units_of(u.nanometer**2/u.second)
 
     numerator = np.exp(fe_profile/(kb*temp))
-    return scipy.integrate.cumtrapz(numerator/diff_profile, x=distances, initial=0)
+    return scipy.integrate.cumtrapz(numerator/diff_profile, x=reaction_coordinates, initial=0)
 
 def compute_permeability_profile(resistance_profile):
     return 1/resistance_profile
