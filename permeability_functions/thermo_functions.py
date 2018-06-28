@@ -108,9 +108,10 @@ def compute_resistance_profile(fe_profile, diff_profile, reaction_coordinates,
     diff_profile = misc.validate_quantity_type(diff_profile, u.nanometer**2/u.second)
     
     numerator = np.exp(fe_profile/(kb*temp))
-    return scipy.integrate.cumtrapz(numerator/diff_profile, x=reaction_coordinates, initial=0) * reaction_coordinates.unit/diff_profile.unit
+    integrand = numerator/diff_profile
+    return integrand, scipy.integrate.trapz(integrand, x=reaction_coordinates) * reaction_coordinates.unit/diff_profile.unit
 
-def compute_permeability_profile(resistance_profile):
-    return 1/resistance_profile
+def compute_permeability(resistance):
+    return 1/resistance
 
 

@@ -54,15 +54,16 @@ fe_profile = thermo_functions.compute_free_energy_profile(mean_forces,
 diffusion_profile = thermo_functions.compute_diffusion_coefficient(
                                                         facf_integrals)
 
-resistance_profile = thermo_functions.compute_resistance_profile(fe_profile, 
+resistance_profile, resistance_integral = thermo_functions.compute_resistance_profile(
+                                                fe_profile, 
                                                 diffusion_profile, 
                                                 reaction_coordinates)
-
-permeability_profile = thermo_functions.compute_permeability_profile(resistance_profile)
-permeability_profile.in_units_of(u.centimeter/u.second)
+permeability_profile = thermo_functions.compute_permeability(resistance_profile)
+permeability_profile = permeability_profile.in_units_of(u.centimeter**2/u.second)
+permeability_integral = thermo_functions.compute_permeability(resistance_integral)
+permeability_integral = permeability_integral.in_units_of(u.centimeter/u.second)
 
 # Plotting
-pdb.set_trace()
 fig, ax = plt.subplots(2,1)
 ax[0].plot(reaction_coordinates._value, fe_profile._value, label='non-sym')
 ax[0].set_xlabel("Reaction Coordinate ({})".format(reaction_coordinates.unit))

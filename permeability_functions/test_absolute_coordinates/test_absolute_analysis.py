@@ -39,11 +39,16 @@ fe_profile = thermo_functions.compute_free_energy_profile(window_forces,
 diffusion_profile = thermo_functions.compute_diffusion_coefficient(
                                                         window_facf_integrals)
 
-resistance_profile = thermo_functions.compute_resistance_profile(fe_profile, 
+resistance_profile, resistance_integral = thermo_functions.compute_resistance_profile(
+                                                fe_profile, 
                                                 diffusion_profile, 
                                                 reaction_coordinates)
 
-permeability_profile = thermo_functions.compute_permeability_profile(resistance_profile)
+permeability_profile = thermo_functions.compute_permeability(resistance_profile)
+permeability_profile = permeability_profile.in_units_of(u.centimeter**2/u.second)
+permeability_integral = thermo_functions.compute_permeability(resistance_integral)
+permeability_integral = permeability_integral.in_units_of(u.centimeter/u.second)
+
 
 # Plotting
 import pdb; pdb.set_trace() 
