@@ -101,18 +101,12 @@ def compute_diffusion_coefficient(intfacf,
 def compute_resistance_profile(fe_profile, diff_profile, reaction_coordinates,
                                 kb=1.987e-3 * u.kilocalorie / (u.mole * u.kelvin),
                                 temp=305*u.kelvin):
-    if not isinstance(fe_profile, u.Quantity):
-        fe_profile = fe_profile * u.kilocalorie/u.mole 
-    else:
-        fe_profile = fe_profile.in_units_of(u.kilocalorie/u.mole)
-
-    if not isinstance(diff_profile, u.Quantity):
-        diff_profile = diff_profile * u.nanometer**2/u.second
-    else:
-        diff_profile = diff_profile.in_units_of(u.nanometer**2/u.second)
-
+    fe_profile = misc.validate_quantity_type(fe_profile, u.kilocalorie/u.mole)
+    
+    diff_profile = misc.validate_quantity_type(diff_profile, u.nanometer**2/u.second)
+    
     numerator = np.exp(fe_profile/(kb*temp))
-    return scipy.integrate.cumtrapz(numerator/diff_profile, x=reaction_coordinates, initial=0)
+    return scipy.integrate.cumtrapz(numerator/diff_profile, x=reaction_coordinates, initial=0) * reaction_coordinates.unit/diff_profile.unit
 
 def compute_permeability_profile(resistance_profile):
     return 1/resistance_profile
