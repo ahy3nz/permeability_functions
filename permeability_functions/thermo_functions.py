@@ -1,4 +1,4 @@
-import itertools
+import scipy.integrate
 import numpy as np
 import mdtraj
 import grid_analysis
@@ -75,17 +75,29 @@ def integrate_facf_over_time(times, facf, average_fraction=0.1):
     return intF, intFval
 
 def compute_free_energy_profile(forces, distances):
+    """
+    forces : array of floats, u.Quantity
+    distances: array of floats, u.Quantity
+
+    Notes
+    -----
+    Forces and distances are u.Quantity, but the elements should just be floats
+    """
     if not isinstance(forces, u.Quantity):
         forces = forces * (u.kilocalorie / (u.mole * u.angstrom))
     else:
         forces = forces.in_units_of( (u.kilocalorie/ (u.mole*u.angstrom)))
+    if isinstance(forces._value[0], u.Quantity):
+        forces = forces.unit*np.array([f._value for f in forces._value])
 
     if not isinstance(distances, u.Quantity):
         distances = distances * u.angstrom
     else:
         distances = distances.in_units_of(u.angstrom)
+    if isinstance(distances._value[0], u.Quantity):
+        distances = distances.unit*np.array([d._value for d in distances._value])
 
-    return -scipy.integrate.cumtrapz(forces, x=distances, initial=0)
+    return -scipy.integrate.cumtrapz(forces._value, x=distances._value, initial=0)*forces.unit*distances.unit
 
 def compute_diffusion_constant(intfacf, 
                                 kb=1.987e-3 * u.kilocalorie / (u.mole * u.kelvin),
