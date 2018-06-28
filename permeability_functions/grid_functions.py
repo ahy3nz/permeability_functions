@@ -7,12 +7,14 @@ import simtk.unit as u
 def distance_from_interface(traj, tracer_resid):
     """ Given a trajectory and a tracer residue, find the closest interface
 
+    traj : mdtraj.Trajectory
+    tracer_resid : int or iterable
+
     Note
     -----
     Comparisons are based on time-averaged interfaces and coordinates
     """
-    res = traj.topology.residue(tracer_resid-1)
-    tracer_oxygen = res.atom(0)
+    
     water_indices = traj.topology.select('water') 
     headgroup_indices = grid_analysis._get_headgroup_indices(traj)
 
@@ -39,28 +41,61 @@ def distance_from_interface(traj, tracer_resid):
             bot_interface_grid[i,j] = bot_interface_avg
             top_interface_grid[i,j] = top_interface_avg
 
-    
-    # Identify which xy region we're in 
-    xyz = np.mean(traj.xyz[:, tracer_oxygen.index, :], axis=0)
-    bin_x = np.digitize(xyz[0], xedges) - 1
-    bin_y = np.digitize(xyz[1], yedges) - 1
+    # if tracer_resid is iterable
+    try: 
+        d_from_local_i_list = []
+        d_from_leaflet_i_list = []
+        for tracer in tracer_resid:
+            res = traj.topology.residue(tracer)
+            tracer_oxygen = res.atom(0)
+            xyz = np.mean(traj.xyz[:, tracer_oxygen.index, :], axis=0)
+            bin_x = np.digitize(xyz[0], xedges) - 1
+            bin_y = np.digitize(xyz[1], yedges) - 1
 
-    # Identify the z interface for this xy region
-    (interface_bot, interface_top) = (bot_interface_grid[bin_x, bin_y],
-                                        top_interface_grid[bin_x, bin_y])
+            # Identify the z interface for this xy region
+            (interface_bot, interface_top) = (bot_interface_grid[bin_x, bin_y],
+                                                top_interface_grid[bin_x, bin_y])
 
-    # Find distance from local interface and leaflet interface
-    # Pick the closer interface
-    if abs(interface_bot - xyz[2]) < abs(interface_top - xyz[2]):
-        d_from_local_i = interface_bot - xyz[2]
-        d_from_leaflet_i = leaflet_interfaces[0] - xyz[2]
-        closest_interface = interface_bot
-    else:
-        d_from_local_i = xyz[2] - interface_top
-        d_from_leaflet_i = xyz[2] - leaflet_interfaces[1] 
-        closest_interface = interface_top
+            # Find distance from local interface and leaflet interface
+            # Pick the closer interface
+            if abs(interface_bot - xyz[2]) < abs(interface_top - xyz[2]):
+                d_from_local_i = interface_bot - xyz[2]
+                d_from_leaflet_i = leaflet_interfaces[0] - xyz[2]
+                closest_interface = interface_bot
+            else:
+                d_from_local_i = xyz[2] - interface_top
+                d_from_leaflet_i = xyz[2] - leaflet_interfaces[1] 
+                closest_interface = interface_top
+            d_from_local_i_list.append(d_from_local_i)
+            d_from_leaflet_i_list.append(d_from_leaflet_i)
 
-    return d_from_local_i, d_from_leaflet_i, closest_interface
+        return d_from_local_i_list, d_from_leaflet_i_list
+
+    # if tracer_resid is a single resid
+    except IndexError:
+        res = traj.topology.residue(tracer_resid)
+        tracer_oxygen = res.atom(0)
+        # Identify which xy region we're in 
+        xyz = np.mean(traj.xyz[:, tracer_oxygen.index, :], axis=0)
+        bin_x = np.digitize(xyz[0], xedges) - 1
+        bin_y = np.digitize(xyz[1], yedges) - 1
+
+        # Identify the z interface for this xy region
+        (interface_bot, interface_top) = (bot_interface_grid[bin_x, bin_y],
+                                            top_interface_grid[bin_x, bin_y])
+
+        # Find distance from local interface and leaflet interface
+        # Pick the closer interface
+        if abs(interface_bot - xyz[2]) < abs(interface_top - xyz[2]):
+            d_from_local_i = interface_bot - xyz[2]
+            d_from_leaflet_i = leaflet_interfaces[0] - xyz[2]
+            closest_interface = interface_bot
+        else:
+            d_from_local_i = xyz[2] - interface_top
+            d_from_leaflet_i = xyz[2] - leaflet_interfaces[1] 
+            closest_interface = interface_top
+
+        return d_from_local_i, d_from_leaflet_i
     
 def find_interface_lipid(traj, headgroup_indices):
     """ Find the interface based on lipid head groups"""
