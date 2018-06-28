@@ -1,6 +1,6 @@
 import numpy as np
 import simtk.unit as u
-def validate_array_type(array, desired_unit):
+def validate_quantity_type(array, desired_unit):
     """ Ensure that arrays are u.Quantity, but elements are just floats
     Parameters
     ---------
@@ -15,8 +15,12 @@ def validate_array_type(array, desired_unit):
         array = array.in_units_of(desired_unit)
     else:
         array = array * desired_unit 
-    if isinstance(array._value[0], u.Quantity):
-        array= array.unit*np.array([d._value for d in array._value])
+    try:
+        if isinstance(array._value[0], u.Quantity):
+            array= array.unit*np.array([d._value for d in array._value])
+    except IndexError:
+        pass
+
     return array
 
 
