@@ -1,9 +1,8 @@
 import scipy.integrate
 import numpy as np
-import mdtraj
-import grid_analysis
-import bilayer_analysis_functions
+
 import simtk.unit as u
+
 import permeability_functions.misc as misc
 
 # 1) Compute means and force correlations (analyze_sweeps)
