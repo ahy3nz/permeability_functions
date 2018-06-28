@@ -4,6 +4,7 @@ import mdtraj
 import grid_analysis
 import bilayer_analysis_functions
 import simtk.unit as u
+import permeability_functions.misc as misc
 
 # 1) Compute means and force correlations (analyze_sweeps)
 # 2) Integrate force correlations  (integrate_acf_over_time)
@@ -14,14 +15,12 @@ def analyze_force_timeseries(times, forces, meanf_name, fcorr_name,
                             correlation_length=300*u.picosecond):
     """ Given a timeseries of forces, compute force autocorrealtions and means"""
     mean_force = np.mean(forces)
-    if isinstance(times, u.Quantity):
-        times = times.in_units_of(u.picosecond)
-    else:
-        times = (times*u.femtosecond).in_units_of(u.picosecond)
+    times = misc.validate_array_type(times, u.picosecond)
     dstep = times[1] - times[0]
     funlen = int(correlation_length/dstep)
     FACF = acf(forces, funlen, dstart=10)
     time_intervals = np.arange(0, funlen*dstep._value, dstep._value )*dstep.unit
+    time_intevals = misc.validate_array_type(time_intervals, dstep.unit)
     times_facf = np.column_stack((time_intervals, FACF))
     np.savetxt(fcorr_name, times_facf)
     np.savetxt(meanf_name, [mean_force._value])
@@ -83,19 +82,8 @@ def compute_free_energy_profile(forces, distances):
     -----
     Forces and distances are u.Quantity, but the elements should just be floats
     """
-    if not isinstance(forces, u.Quantity):
-        forces = forces * (u.kilocalorie / (u.mole * u.angstrom))
-    else:
-        forces = forces.in_units_of( (u.kilocalorie/ (u.mole*u.angstrom)))
-    if isinstance(forces._value[0], u.Quantity):
-        forces = forces.unit*np.array([f._value for f in forces._value])
-
-    if not isinstance(distances, u.Quantity):
-        distances = distances * u.angstrom
-    else:
-        distances = distances.in_units_of(u.angstrom)
-    if isinstance(distances._value[0], u.Quantity):
-        distances = distances.unit*np.array([d._value for d in distances._value])
+    forces = misc.validate_array_type(forces, (u.kilocalorie / (u.mole * u.angstrom)))
+    distances = misc.validate_array_type(distances, u.angstrom)
 
     return -scipy.integrate.cumtrapz(forces._value, x=distances._value, initial=0)*forces.unit*distances.unit
 
