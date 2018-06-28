@@ -68,7 +68,7 @@ def integrate_facf_over_time(times, facf, average_fraction=0.1):
     We're doing a cumulative sum, but average the 'last bit' in order 
     to average out the noise
     """
-    intF = np.cumsum(facf)*(times[1]-times[0])
+    intF = np.cumsum(facf)*facf.unit * (times[1]-times[0])
     lastbit = int((1.0-average_fraction)*intF.shape[0])
     intFval = np.mean(intF[-lastbit:])
 
