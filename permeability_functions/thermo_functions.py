@@ -11,6 +11,35 @@ import permeability_functions.misc as misc
 # 4) Use inhomogeneous-diffusion solubility model to get resistance over distance
 # 5) Invert resistance to get permeability
 
+def permeability_routine(reaction_coordinates, mean_forces, facf_integrals):
+    """ Umbrella function that calls functions to look at free energy,
+    diffusion, resistance, and permeability """
+    reaction_coordinates = misc.validate_quantity_type(reaction_coordinates, 
+                                                        u.nanometer)
+    mean_forces = misc.validate_quantity_type(mean_forces, 
+                                            u.kilocalorie/(u.mole*u.angstrom))
+
+    facf_integrals = misc.validate_quantity_type(facf_integrals, 
+                                (u.kilocalorie/(u.mole*u.angstrom))**2*u.picosecond)
+
+    fe_profile = compute_free_energy_profile(mean_forces,
+                                                            reaction_coordinates)
+
+    diffusion_profile = compute_diffusion_coefficient(
+                                                            facf_integrals)
+
+    resistance_profile, resistance_integral = compute_resistance_profile(
+                                                    fe_profile, 
+                                                    diffusion_profile, 
+                                                    reaction_coordinates)
+    permeability_profile = compute_permeability(resistance_profile)
+    permeability_profile = permeability_profile.in_units_of(u.centimeter**2/u.second)
+
+    permeability_integral = compute_permeability(resistance_integral)
+    permeability_integral = permeability_integral.in_units_of(u.centimeter/u.second)
+
+    return (reaction_coordinates, mean_forces, facf_integrals, fe_profile, diffusion_profile, resistance_profile, resistance_integral, permeability_profile, permeability_integral)
+
 def analyze_force_timeseries(times, forces, meanf_name=None, fcorr_name=None,
                             correlation_length=300*u.picosecond):
     """ Given a timeseries of forces, compute force autocorrealtions and means"""
