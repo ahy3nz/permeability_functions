@@ -58,4 +58,5 @@ ax[1].set_xlabel("Reaction Coordinate ({})".format(reaction_coordinates.unit))
 ax[1].set_ylabel("Diffusion ({})".format(diffusion_profile.unit))
 fig.tight_layout()
 fig.savefig('profiles.png')
+plt.close(fig)
 

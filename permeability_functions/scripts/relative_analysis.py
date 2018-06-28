@@ -80,4 +80,4 @@ for (tuple_thing, suffix) in [local_tuples, leaflet_tuples]:
     ax[1].set_ylabel("Diffusion ({})".format(diffusion_profile.unit))
     fig.tight_layout()
     fig.savefig('profiles_{}.png'.format(suffix))
-    plt.close()
+    plt.close(fig)
