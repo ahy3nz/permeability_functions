@@ -5,8 +5,8 @@ import simtk.unit as u
 
 import permeability_functions.misc as misc
 
-# 1) Compute means and force correlations (analyze_sweeps)
-# 2) Integrate force correlations  (integrate_acf_over_time)
+# 1) Compute means and force autocorrelations
+# 2) Integrate force correlations
 # 3) For each window, recover the tracer and get the reaction_coordinates from interface
 # 4) Integrate mean forces and force autocorrelations based on these reaction_coordinates
 
