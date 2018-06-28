@@ -6,11 +6,12 @@ import simtk.unit as u
 import permeability_functions.misc as misc
 
 # 1) Compute means and force autocorrelations
-# 2) Integrate force correlations
-# 3) For each window, recover the tracer and get the reaction_coordinates from interface
-# 4) Integrate mean forces and force autocorrelations based on these reaction_coordinates
+# 2) Integrate force correlations over time and get diffusion
+# 3) Integrate mean forces over distance and get free energy
+# 4) Use inhomogeneous-diffusion solubility model to get resistance over distance
+# 5) Invert resistance to get permeability
 
-def analyze_force_timeseries(times, forces, meanf_name, fcorr_name,
+def analyze_force_timeseries(times, forces, meanf_name=None, fcorr_name=None,
                             correlation_length=300*u.picosecond):
     """ Given a timeseries of forces, compute force autocorrealtions and means"""
     mean_force = np.mean(forces)
@@ -21,8 +22,10 @@ def analyze_force_timeseries(times, forces, meanf_name, fcorr_name,
     time_intervals = np.arange(0, funlen*dstep._value, dstep._value )*dstep.unit
     time_intevals = misc.validate_quantity_type(time_intervals, dstep.unit)
     times_facf = np.column_stack((time_intervals, FACF))
-    np.savetxt(fcorr_name, times_facf)
-    np.savetxt(meanf_name, [mean_force._value])
+    if fcorr_name:
+        np.savetxt(fcorr_name, times_facf)
+    if meanf_name:
+        np.savetxt(meanf_name, [mean_force._value])
 
     return mean_force, time_intervals, FACF
 
