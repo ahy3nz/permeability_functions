@@ -52,6 +52,10 @@ for tuple_thing in [local_tuples, leaflet_tuples]:
             permeability_profile, permeability_integral) = thermo_functions.permeability_routine(reaction_coordinates, mean_forces, facf_integrals)
     print((np.max(mean_forces), np.max(fe_profile)))
     print(permeability_integral)
+    np.savetxt('diffusion_profile.dat', np.column_stack((reaction_coordinates, diffusion_profile)))
+    np.savetxt('free_energy_profile.dat', np.column_stack((reaction_coordinates, fe_profile)))
+    np.savetxt('resistance_profile.dat', np.column_stack((reaction_coordinates, resistance_profile)))
+    np.savetxt('permeability_profile.dat', np.column_stack((reaction_coordinates, permeability_profile)))
 
     # Plotting
     fig, ax = plt.subplots(2,1)
