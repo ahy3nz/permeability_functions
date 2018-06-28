@@ -11,7 +11,14 @@ mean_force , time_intervals, facf = thermo_functions.analyze_force_timeseries(ti
 intF, intFval = thermo_functions.integrate_facf_over_time(time_intervals, facf)
 window_forces = [mean_force] * n_windows
 reaction_coordinates = np.linspace(0, n_windows*2 + 1, num=n_windows) * u.angstrom
-fe_profile = thermo_functions.compute_free_energy_profile(window_forces,reaction_coordinates)
+
+fe_profile = thermo_functions.compute_free_energy_profile(window_forces,
+                                                reaction_coordinates)
 int_F_vals =[intFval] * n_windows
 diffusion_profile = thermo_functions.compute_diffusion_coefficient(int_F_vals)
+
+resistance_profile = thermo_functions.compute_resistance_profile(fe_profile, 
+                                                diffusion_profile, 
+                                                reaction_coordinates)
+permeability_profile = thermo_functions.compute_permeability_profile(resistance_profile)
 pdb.set_trace()
