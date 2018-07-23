@@ -125,7 +125,7 @@ def compute_diffusion_coefficient(intfacf,
     
 
     RT2 = (kb*temp)**2
-    diffusion_coefficient = (RT2/intfacf).in_units_of(u.nanometer**2/u.second)
+    diffusion_coefficient = (RT2/intfacf).in_units_of(u.centimeter**2/u.second)
 
     return diffusion_coefficient
 
@@ -134,7 +134,7 @@ def compute_resistance_profile(fe_profile, diff_profile, reaction_coordinates,
                                 temp=305*u.kelvin):
     fe_profile = misc.validate_quantity_type(fe_profile, u.kilocalorie/u.mole)
     
-    diff_profile = misc.validate_quantity_type(diff_profile, u.nanometer**2/u.second)
+    diff_profile = misc.validate_quantity_type(diff_profile, u.centimeter**2/u.second)
     
     numerator = np.exp(fe_profile/(kb*temp))
     integrand = numerator/diff_profile
