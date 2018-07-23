@@ -26,8 +26,8 @@ def main():
                     fcorr_name='Sim{0}/fcorr{1}.dat'.format(sim_number, forceout_id))
             intF, intFval = thermo_functions.integrate_facf_over_time(time_intervals, 
                                                                         facf)
-            window_forces[forceout_id] = mean_force
-            window_facf_integrals[forceout_id] = intFval
+            window_forces[forceout_id] = mean_force._value
+            window_facf_integrals[forceout_id] = intFval._value
     
     
     (reaction_coordinates, mean_forces, facf_integrals, fe_profile, 
