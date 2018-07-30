@@ -49,6 +49,7 @@ def symmetrize(data, zero_boundary_condition=False):
     """
     n_windows = data.shape[0]
     n_win_half = int(np.ceil(float(n_windows)/2))
+    data = _check_nan(data)
     dataSym = np.zeros_like(data)
     dataSym_err = np.zeros_like(data)
     shift = {True: data[-1], False: 0.0}
@@ -60,4 +61,16 @@ def symmetrize(data, zero_boundary_condition=False):
     if zero_boundary_condition:
         dataSym[:] -= dataSym[0]
     return dataSym, dataSym_err
+
+def _check_nan(data):
+    """ Given an array of data to be symmetrized, replace nans with counterparts """
+
+    n_windows = data.shape[0]
+    n_win_half = int(np.ceil(float(n_windows)/2))
+    for i, sym_val in enumerate(data[:n_win_half]):
+        if np.isnan(sym_val):
+            data[i] = data[-(i+1)]
+        if np.isnan(data[-(i+1)]):
+            data[-(i+1)] = data[i]
+    return data
 
