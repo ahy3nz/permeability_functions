@@ -12,6 +12,7 @@ matplotlib.rcParams['xtick.labelsize']=20
 
 # So far this just looks at the absolute coordiante systems
 ylim = [1e-7, 1e-2]
+felim = [0,12]
 
 
 #all_sweeps = [thing for thing in os.listdir() if os.path.isdir(thing) and 'sweep2' not in thing and 'sweep8' not in thing and 'sweep6' not in thing and '__pycache__' not in thing]
@@ -220,6 +221,7 @@ ax.fill_between(rxn_coordinates, bootstrap_fe_profile - bootstrap_fe_err_profile
                                  alpha=0.4)
 ax.set_ylabel(r"$\Delta$G (kcal/mol)", color = l.get_color())
 ax.set_xlabel(r"Reaction Coordinate (nm)")
+ax.set_ylim(felim)
 for ytick in ax.get_yticklabels():
     ytick.set_color(l.get_color())
 
