@@ -14,21 +14,23 @@ matplotlib.rcParams['xtick.labelsize']=20
 ylim = [1e-7, 1e-2]
 
 
-all_sweeps = [thing for thing in os.listdir() if os.path.isdir(thing) and 'sweep2' not in thing and 'sweep8' not in thing and 'sweep6' not in thing and '__pycache__' not in thing]
+#all_sweeps = [thing for thing in os.listdir() if os.path.isdir(thing) and 'sweep2' not in thing and 'sweep8' not in thing and 'sweep6' not in thing and '__pycache__' not in thing]
+all_sweeps = [thing for thing in os.listdir() if os.path.isdir(thing) and '__pycache__' not in thing]
 all_fe_profiles = []
 all_diff_profiles = []
 rxn_coordinates = np.loadtxt('z_windows.out')
 for sweep in all_sweeps:
-    fe_profile = np.loadtxt('{}/free_energy_profile.dat'.format(sweep))[:,1]
-    diffusion_profile = np.loadtxt('{}/diffusion_profile.dat'.format(sweep))[:,1]
-    if (diffusion_profile[0]) > 1:
-        diffusion_profile *= (u.nanometer**2)/u.second
-    else:
-        diffusion_profile *= (u.centimeter**2)/u.second
-    diff_profile = diffusion_profile.in_units_of(u.centimeter**2/u.second)
-    diff_profile = diff_profile._value
-    all_fe_profiles.append(fe_profile)
-    all_diff_profiles.append(diff_profile)
+    if os.path.isfile('{}/resistance_profile.dat'.format(sweep)):
+        fe_profile = np.loadtxt('{}/free_energy_profile.dat'.format(sweep))[:,1]
+        diffusion_profile = np.loadtxt('{}/diffusion_profile.dat'.format(sweep))[:,1]
+        if (diffusion_profile[0]) > 1:
+            diffusion_profile *= (u.nanometer**2)/u.second
+        else:
+            diffusion_profile *= (u.centimeter**2)/u.second
+        diff_profile = diffusion_profile.in_units_of(u.centimeter**2/u.second)
+        diff_profile = diff_profile._value
+        all_fe_profiles.append(fe_profile)
+        all_diff_profiles.append(diff_profile)
 all_fe_profiles = np.asarray(all_fe_profiles)
 all_diff_profiles = np.asarray(all_diff_profiles)
 
@@ -72,7 +74,7 @@ fig.savefig('avg_profiles.png',transparent=True)
 #########
 # Now plot bootstrapping
 ########
-n_sweeps = len(all_sweeps)
+n_sweeps = all_fe_profiles.shape[0]
 n_bs = 1000
 bootstrap_fe_profiles = []
 bootstrap_diff_profiles = []
@@ -129,7 +131,7 @@ fig.savefig('bootstrap_profiles.png',transparent=True)
 #########
 # Now plot log bootstrapping
 ########
-n_sweeps = len(all_sweeps)
+n_sweeps = all_fe_profiles.shape[0]
 n_bs = 1000
 bootstrap_fe_profiles = []
 bootstrap_diff_profiles = []
@@ -142,7 +144,11 @@ for _ in range(n_bs):
     bootstrap_diff_sample = []
     for index in bootstrap_indices:
         bootstrap_fe_sample.append(all_fe_profiles[index,:])
-        bootstrap_diff_sample.append(np.log(all_diff_profiles[index,:]))
+        to_add = []
+        for val in all_diff_profiles[index, :]:
+            to_add.append(np.log(abs(val)))
+        bootstrap_diff_sample.append(to_add)
+        #bootstrap_diff_sample.append(np.log(all_diff_profiles[index,:]))
     bootstrap_fe_profiles.append(np.mean(bootstrap_fe_sample,axis=0))
     bootstrap_diff_profiles.append(np.mean(bootstrap_diff_sample,axis=0))
 
