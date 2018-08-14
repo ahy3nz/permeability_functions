@@ -11,7 +11,7 @@ import simtk.unit as u
 def main():
     all_sweeps = [thing for thing in os.listdir() is os.path.isdir(thing) and 'cache' not in thing]
     curr_dir = os.getcwd()
-    n_sims = 5
+    n_sims = 16
     for sweep in all_sweeps:
         print(sweep)
         os.chdir(os.path.join(curr_dir, sweep))
@@ -23,9 +23,9 @@ def main():
             tracers = np.loadtxt('Sim{0}/tracers.out'.format(sim_number), dtype=int) - 1
             for i,tracerid in enumerate(tracers):
                 forceout_id = sim_number + (i*n_sims)
-                data = np.loadtxt('Sim{0}/forceout{1}.dat'.format(sim_number, forceout_id))
-                times = data[:,1] * u.femtosecond
-                forces = data[:,2] * u.kilocalorie/(u.mole*u.angstrom)
+                data = np.loadtxt('Sim{0}/condensed_forceout{1}.dat'.format(sim_number, forceout_id))
+                times = data[:,0] * u.femtosecond
+                forces = data[:,1] * u.kilocalorie/(u.mole*u.angstrom)
                 mean_force , time_intervals, facf = thermo_functions.analyze_force_timeseries(
                         times, forces, 
                         meanf_name='Sim{0}/meanforce{1}.dat'.format(sim_number, forceout_id), 
