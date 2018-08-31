@@ -54,6 +54,10 @@ def symmetrize(data, zero_boundary_condition=False):
     dataSym_err = np.zeros_like(data)
     shift = {True: data[-1], False: 0.0}
     for i, sym_val in enumerate(dataSym[:n_win_half]):
+        if np.isinf(data[i]):
+            data[i] = data[-(i+1)]
+        if np.isinf(data[-(i+1)]):
+            data[-(i+1)] = data[i]
         val = 0.5 * (data[i] + data[-(i+1)])
         err = np.std([data[i], data[-(i+1)] - shift[zero_boundary_condition]]) / np.sqrt(2)
         dataSym[i], dataSym_err[i] = val, err
