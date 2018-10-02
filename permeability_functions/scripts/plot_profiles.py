@@ -41,13 +41,17 @@ for sweep in all_sweeps:
         resistance_profile = np.loadtxt('{}/resistance_profile.dat'.format(sweep))[:,1]
         if (diffusion_profile[0]) > 1:
             diffusion_profile *= (u.nanometer**2)/u.second
+            resistance_profile *= u.second/(u.nanometer**2)
         else:
             diffusion_profile *= (u.centimeter**2)/u.second
+            resistance_profile *= (u.second)/(u.centimeter**2)
         diff_profile = diffusion_profile.in_units_of(u.centimeter**2/u.second)
         diff_profile = diff_profile._value
+        resist_profile = resistance_profile.in_units_of(u.second/(u.centimeter**2))
+        resist_profile = resist_profile._value 
         all_fe_profiles.append(fe_profile)
         all_diff_profiles.append(diff_profile)
-        all_resist_profiles.append(resistance_profile)
+        all_resist_profiles.append(resist_profile)
 all_fe_profiles = np.asarray(all_fe_profiles)
 all_diff_profiles = np.asarray(all_diff_profiles)
 all_resist_profiles = np.asarray(all_resist_profiles)
