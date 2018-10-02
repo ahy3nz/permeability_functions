@@ -160,7 +160,7 @@ for _ in range(n_bs):
         bootstrap_fe_sample.append(all_fe_profiles[index,:])
         to_add = []
         for val in all_diff_profiles[index, :]:
-            to_add.append(np.log(abs(val)))
+            to_add.append(np.log((val)))
         bootstrap_diff_sample.append(to_add)
         #bootstrap_diff_sample.append(np.log(all_diff_profiles[index,:]))
     bootstrap_fe_profiles.append(np.nanmean(bootstrap_fe_sample,axis=0))
