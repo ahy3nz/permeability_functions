@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
+import mdtraj
 import parmed.unit as u
 import pdb
 import permeability_functions.misc as misc
@@ -16,9 +17,19 @@ plot_ay.setDefaults()
 ylim = [1e-8, 1e-2]
 felim = [0,12]
 
+traj = mdtraj.load('centered.gro')
+midplane = traj.unitcell_lengths[0,2]/2
+phosphorus_atoms = traj.topology.select('resname DSPC and name P')
 
-#all_sweeps = [thing for thing in os.listdir() if os.path.isdir(thing) and 'sweep2' not in thing and 'sweep8' not in thing and 'sweep6' not in thing and '__pycache__' not in thing]
-all_sweeps = [thing for thing in os.listdir() if os.path.isdir(thing) and '__pycache__' not in thing]
+top_interface_atoms = [a for a in phosphorus_atoms if traj.xyz[0,a,2] > midplane]
+bot_interface_atoms = [a for a in phosphorus_atoms if traj.xyz[0,a,2] < midplane]
+
+top_interface = np.nanmean(traj.xyz[0, top_interface_atoms,2])
+bot_interface = np.nanmean(traj.xyz[0, bot_interface_atoms,2])
+
+
+#all_sweeps = [thing for thing in os.linanstdir() if os.path.isdir(thing) and 'sweep2' not in thing and 'sweep8' not in thing and 'sweep6' not in thing and '__pycache__' not in thing]
+all_sweeps = [thing for thing in os.linanstdir() if os.path.isdir(thing) and '__pycache__' not in thing]
 all_fe_profiles = []
 all_diff_profiles = []
 rxn_coordinates = np.loadtxt('z_windows.out')
@@ -37,10 +48,10 @@ for sweep in all_sweeps:
 all_fe_profiles = np.asarray(all_fe_profiles)
 all_diff_profiles = np.asarray(all_diff_profiles)
 
-avg_fe_profile = np.mean(all_fe_profiles, axis=0)
-avg_fe_err_profile = np.std(all_fe_profiles, axis=0)/np.sqrt(all_fe_profiles.shape[0])
-avg_diff_profile = np.mean(all_diff_profiles, axis=0)
-avg_diff_err_profile = np.std(all_diff_profiles, axis=0)/np.sqrt(all_diff_profiles.shape[0])
+avg_fe_profile = np.nanmean(all_fe_profiles, axis=0)
+avg_fe_err_profile = np.nanstd(all_fe_profiles, axis=0)/np.sqrt(all_fe_profiles.shape[0])
+avg_diff_profile = np.nanmean(all_diff_profiles, axis=0)
+avg_diff_err_profile = np.nanstd(all_diff_profiles, axis=0)/np.sqrt(all_diff_profiles.shape[0])
 avg_fe_profile, _  = misc.symmetrize(avg_fe_profile, zero_boundary_condition=True)
 avg_fe_err_profile, _ = misc.symmetrize(avg_fe_err_profile)
 avg_diff_profile, _ = misc.symmetrize(avg_diff_profile)
@@ -91,17 +102,17 @@ for _ in range(n_bs):
     for index in bootstrap_indices:
         bootstrap_fe_sample.append(all_fe_profiles[index,:])
         bootstrap_diff_sample.append(all_diff_profiles[index,:])
-    bootstrap_fe_profiles.append(np.mean(bootstrap_fe_sample,axis=0))
-    bootstrap_diff_profiles.append(np.mean(bootstrap_diff_sample,axis=0))
+    bootstrap_fe_profiles.append(np.nanmean(bootstrap_fe_sample,axis=0))
+    bootstrap_diff_profiles.append(np.nanmean(bootstrap_diff_sample,axis=0))
 
 bootstrap_fe_profiles = np.asarray(bootstrap_fe_profiles)
 bootstrap_diff_profiles = np.asarray(bootstrap_diff_profiles)
 
-bootstrap_fe_profile = np.mean(bootstrap_fe_profiles, axis=0)
-bootstrap_diff_profile = np.mean(bootstrap_diff_profiles, axis=0)
+bootstrap_fe_profile = np.nanmean(bootstrap_fe_profiles, axis=0)
+bootstrap_diff_profile = np.nanmean(bootstrap_diff_profiles, axis=0)
 
-bootstrap_fe_err_profile = np.std(bootstrap_fe_profiles, axis=0)/np.sqrt(n_bs)
-bootstrap_diff_err_profile = np.std(bootstrap_diff_profiles, axis=0)/np.sqrt(n_bs)
+bootstrap_fe_err_profile = np.nanstd(bootstrap_fe_profiles, axis=0)/np.sqrt(n_bs)
+bootstrap_diff_err_profile = np.nanstd(bootstrap_diff_profiles, axis=0)/np.sqrt(n_bs)
 
 bootstrap_fe_profile, _ = misc.symmetrize(bootstrap_fe_profile, 
                                         zero_boundary_condition=True)
@@ -152,18 +163,18 @@ for _ in range(n_bs):
             to_add.append(np.log(abs(val)))
         bootstrap_diff_sample.append(to_add)
         #bootstrap_diff_sample.append(np.log(all_diff_profiles[index,:]))
-    bootstrap_fe_profiles.append(np.mean(bootstrap_fe_sample,axis=0))
-    bootstrap_diff_profiles.append(np.mean(bootstrap_diff_sample,axis=0))
+    bootstrap_fe_profiles.append(np.nanmean(bootstrap_fe_sample,axis=0))
+    bootstrap_diff_profiles.append(np.nanmean(bootstrap_diff_sample,axis=0))
 
 bootstrap_fe_profiles = np.asarray(bootstrap_fe_profiles)
 bootstrap_diff_profiles = np.asarray(bootstrap_diff_profiles)
 
-bootstrap_fe_profile = np.mean(bootstrap_fe_profiles, axis=0)
-bootstrap_diff_profile = np.mean(bootstrap_diff_profiles, axis=0)
+bootstrap_fe_profile = np.nanmean(bootstrap_fe_profiles, axis=0)
+bootstrap_diff_profile = np.nanmean(bootstrap_diff_profiles, axis=0)
 bootstrap_diff_profile = np.exp(bootstrap_diff_profile)
 
-bootstrap_fe_err_profile = np.std(bootstrap_fe_profiles, axis=0)/np.sqrt(n_bs)
-bootstrap_diff_err_profile = np.std(np.exp(bootstrap_diff_profiles), axis=0)/np.sqrt(n_bs)
+bootstrap_fe_err_profile = np.nanstd(bootstrap_fe_profiles, axis=0)/np.sqrt(n_bs)
+bootstrap_diff_err_profile = np.nanstd(np.exp(bootstrap_diff_profiles), axis=0)/np.sqrt(n_bs)
 #bootstrap_diff_err_profile = np.exp(bootstrap_diff_err_profile)
 
 bootstrap_fe_profile, _ = misc.symmetrize(bootstrap_fe_profile, 
@@ -238,6 +249,8 @@ ax2.set_ylim(ylim)
 for ytick in ax2.get_yticklabels():
     ytick.set_color(second_color)
 
+ax.axvline(x=top_interface, color='k', linestyle=':')
+ax.axvline(x=bot_interface, color='k', linestyle=':')
 ax2.set_ylabel(r"Diffusion (cm$^2$/sec)", color=second_color)
 plot_ay.tidyUp(fig, ax, tightLayoutArgs={}, gridArgs={'axis':'y'})
 fig.tight_layout()
