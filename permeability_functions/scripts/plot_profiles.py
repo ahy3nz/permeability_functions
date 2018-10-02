@@ -28,8 +28,8 @@ top_interface = np.nanmean(traj.xyz[0, top_interface_atoms,2])
 bot_interface = np.nanmean(traj.xyz[0, bot_interface_atoms,2])
 
 
-#all_sweeps = [thing for thing in os.linanstdir() if os.path.isdir(thing) and 'sweep2' not in thing and 'sweep8' not in thing and 'sweep6' not in thing and '__pycache__' not in thing]
-all_sweeps = [thing for thing in os.linanstdir() if os.path.isdir(thing) and '__pycache__' not in thing]
+#all_sweeps = [thing for thing in os.listdir() if os.path.isdir(thing) and 'sweep2' not in thing and 'sweep8' not in thing and 'sweep6' not in thing and '__pycache__' not in thing]
+all_sweeps = [thing for thing in os.listdir() if os.path.isdir(thing) and '__pycache__' not in thing]
 all_fe_profiles = []
 all_diff_profiles = []
 rxn_coordinates = np.loadtxt('z_windows.out')
