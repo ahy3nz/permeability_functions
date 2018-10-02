@@ -32,11 +32,13 @@ bot_interface = np.nanmean(traj.xyz[0, bot_interface_atoms,2])
 all_sweeps = [thing for thing in os.listdir() if os.path.isdir(thing) and '__pycache__' not in thing]
 all_fe_profiles = []
 all_diff_profiles = []
+all_resist_profiles = []
 rxn_coordinates = np.loadtxt('z_windows.out')
 for sweep in all_sweeps:
     if os.path.isfile('{}/resistance_profile.dat'.format(sweep)):
         fe_profile = np.loadtxt('{}/free_energy_profile.dat'.format(sweep))[:,1]
         diffusion_profile = np.loadtxt('{}/diffusion_profile.dat'.format(sweep))[:,1]
+        resistance_profile = np.loadtxt('{}/resistance_profile.dat'.format(sweep))[:,1]
         if (diffusion_profile[0]) > 1:
             diffusion_profile *= (u.nanometer**2)/u.second
         else:
@@ -45,17 +47,24 @@ for sweep in all_sweeps:
         diff_profile = diff_profile._value
         all_fe_profiles.append(fe_profile)
         all_diff_profiles.append(diff_profile)
+        all_resist_profiles.append(resistance_profile)
 all_fe_profiles = np.asarray(all_fe_profiles)
 all_diff_profiles = np.asarray(all_diff_profiles)
+all_resist_profiles = np.asarray(all_resist_profiles)
 
 avg_fe_profile = np.nanmean(all_fe_profiles, axis=0)
 avg_fe_err_profile = np.nanstd(all_fe_profiles, axis=0)/np.sqrt(all_fe_profiles.shape[0])
 avg_diff_profile = np.nanmean(all_diff_profiles, axis=0)
 avg_diff_err_profile = np.nanstd(all_diff_profiles, axis=0)/np.sqrt(all_diff_profiles.shape[0])
+avg_resist_profile = np.nanmean(all_resist_profiles,axis=0)
+avg_resist_err_profile = np.nanstd(all_resist_profiles,axis=0)/np.sqrt(all_resist_profiles.shape[0])
 avg_fe_profile, _  = misc.symmetrize(avg_fe_profile, zero_boundary_condition=True)
 avg_fe_err_profile, _ = misc.symmetrize(avg_fe_err_profile)
 avg_diff_profile, _ = misc.symmetrize(avg_diff_profile)
 avg_diff_err_profile, _ = misc.symmetrize(avg_diff_err_profile)
+avg_resist_profile, _ = misc.symmetrize(avg_resist_profile)
+avg_resist_err_profile, _ = misc.symmetrize(avg_resist_err_profile)
+
 
 np.savetxt('avg_free_energy_profile.dat', np.column_stack((rxn_coordinates,
                                                             avg_fe_profile,
@@ -63,6 +72,8 @@ np.savetxt('avg_free_energy_profile.dat', np.column_stack((rxn_coordinates,
 np.savetxt('avg_diff_profile.dat', np.column_stack((rxn_coordinates,
                                                             avg_diff_profile,
                                                             avg_diff_err_profile)))
+np.savetxt('avg_resist_profile.dat', np.column_stack((rxn_coordinates,
+    avg_resist_profile, avg_resist_err_profile)))
 
 fig, ax = plt.subplots(2,1)
 ax[0].plot(rxn_coordinates, avg_fe_profile)
@@ -94,31 +105,41 @@ bootstrap_fe_profiles = []
 bootstrap_diff_profiles = []
 bootstrap_fe_err_profiles = []
 bootstrap_diff_err_profiles = []
+bootstrap_resist_profiles = []
+bootstrap_resist_err_profiles = []
 
 for _ in range(n_bs):
     bootstrap_indices = np.random.randint(0, n_sweeps, size=n_sweeps)
     bootstrap_fe_sample = []
     bootstrap_diff_sample = []
+    bootstrap_resist_sample = []
     for index in bootstrap_indices:
         bootstrap_fe_sample.append(all_fe_profiles[index,:])
         bootstrap_diff_sample.append(all_diff_profiles[index,:])
+        bootstrap_resist_sample.append(all_resist_profiles[index,:])
     bootstrap_fe_profiles.append(np.nanmean(bootstrap_fe_sample,axis=0))
     bootstrap_diff_profiles.append(np.nanmean(bootstrap_diff_sample,axis=0))
+    bootstrap_resist_profiles.append(np.nanmean(bootstrap_resist_sample, axis=0))
 
 bootstrap_fe_profiles = np.asarray(bootstrap_fe_profiles)
 bootstrap_diff_profiles = np.asarray(bootstrap_diff_profiles)
+bootstrap_resist_profiles = np.asarray(bootstrap_resist_profiles)
 
 bootstrap_fe_profile = np.nanmean(bootstrap_fe_profiles, axis=0)
 bootstrap_diff_profile = np.nanmean(bootstrap_diff_profiles, axis=0)
+bootstrap_resist_profile = np.nanmean(bootstrap_resist_profiles, axis=0)
 
 bootstrap_fe_err_profile = np.nanstd(bootstrap_fe_profiles, axis=0)/np.sqrt(n_bs)
 bootstrap_diff_err_profile = np.nanstd(bootstrap_diff_profiles, axis=0)/np.sqrt(n_bs)
+bootstrap_resist_err_profile = np.nanstd(bootstrap_resist_profiles, axis=0)/np.sqrt(n_bs)
 
 bootstrap_fe_profile, _ = misc.symmetrize(bootstrap_fe_profile, 
                                         zero_boundary_condition=True)
 bootstrap_diff_profile, _ = misc.symmetrize(bootstrap_diff_profile)
+bootstrap_resist_profile, _ = misc.symmetrize(bootstrap_resist_profile)
 bootstrap_fe_err_profile, _ = misc.symmetrize(bootstrap_fe_err_profile)
 bootstrap_diff_err_profile, _ = misc.symmetrize(bootstrap_diff_err_profile)
+bootstrap_resist_err_profile, _ = misc.symmetrize(bootstrap_resist_err_profile)
 
 fig, ax = plt.subplots(2,1)
 ax[0].plot(rxn_coordinates, avg_fe_profile)
@@ -149,39 +170,51 @@ n_sweeps = all_fe_profiles.shape[0]
 n_bs = 1000
 bootstrap_fe_profiles = []
 bootstrap_diff_profiles = []
+bootstrap_resist_profiles = []
 bootstrap_fe_err_profiles = []
 bootstrap_diff_err_profiles = []
+bootstrap_resist_err_profiles = []
 
 for _ in range(n_bs):
     bootstrap_indices = np.random.randint(0, n_sweeps, size=n_sweeps)
     bootstrap_fe_sample = []
     bootstrap_diff_sample = []
+    bootstrap_resist_sample = []
     for index in bootstrap_indices:
         bootstrap_fe_sample.append(all_fe_profiles[index,:])
         to_add = []
         for val in all_diff_profiles[index, :]:
             to_add.append(np.log((val)))
         bootstrap_diff_sample.append(to_add)
+        bootstrap_resist_sample.append(np.log(all_resist_profiles[index,:]))
         #bootstrap_diff_sample.append(np.log(all_diff_profiles[index,:]))
     bootstrap_fe_profiles.append(np.nanmean(bootstrap_fe_sample,axis=0))
     bootstrap_diff_profiles.append(np.nanmean(bootstrap_diff_sample,axis=0))
+    bootstrap_resist_profiles.append(np.nanmean(bootstrap_resist_sample, axis=0))
 
 bootstrap_fe_profiles = np.asarray(bootstrap_fe_profiles)
 bootstrap_diff_profiles = np.asarray(bootstrap_diff_profiles)
+bootstrap_resist_profiles = np.asarray(bootstrap_resist_profiles)
 
 bootstrap_fe_profile = np.nanmean(bootstrap_fe_profiles, axis=0)
 bootstrap_diff_profile = np.nanmean(bootstrap_diff_profiles, axis=0)
 bootstrap_diff_profile = np.exp(bootstrap_diff_profile)
+bootstrap_resist_profile = np.nanmean(bootstrap_resist_profiles,axis=0)
+bootstrap_resist_profile = np.exp(bootstrap_resist_profile)
 
 bootstrap_fe_err_profile = np.nanstd(bootstrap_fe_profiles, axis=0)/np.sqrt(n_bs)
 bootstrap_diff_err_profile = np.nanstd(np.exp(bootstrap_diff_profiles), axis=0)/np.sqrt(n_bs)
 #bootstrap_diff_err_profile = np.exp(bootstrap_diff_err_profile)
+bootstrap_resist_err_profile = np.nanstd(np.exp(bootstrap_resist_profiles), axis=0)/np.sqrt(n_bs)
 
 bootstrap_fe_profile, _ = misc.symmetrize(bootstrap_fe_profile, 
                                     zero_boundary_condition=True)
 bootstrap_fe_err_profile, _ = misc.symmetrize(bootstrap_fe_err_profile)
 bootstrap_diff_profile, _ = misc.symmetrize(bootstrap_diff_profile)
 bootstrap_diff_err_profile,_ = misc.symmetrize(bootstrap_diff_err_profile)
+bootstrap_resist_profile, _ = misc.symmetrize(bootstrap_resist_profile)
+bootstrap_resist_err_profile,_ = misc.symmetrize(bootstrap_resist_err_profile)
+
 
 fig, ax = plt.subplots(2,1)
 ax[0].plot(rxn_coordinates, avg_fe_profile)
@@ -255,3 +288,18 @@ ax2.set_ylabel(r"Diffusion (cm$^2$/sec)", color=second_color)
 plot_ay.tidyUp(fig, ax, tightLayoutArgs={}, gridArgs={'axis':'y'})
 fig.tight_layout()
 fig.savefig('stacked_profiles.png',transparent=True)
+plt.close(fig)
+
+fig, ax = plt.subplots(1,1)
+l, = ax.plot(rxn_coordinates, bootstrap_resist_profile)
+ax.fill_between(rxn_coordinates, 
+        bootstrap_resist_profile - bootstrap_resist_err_profile,
+        bootstrap_resist_profile + bootstrap_resist_err_profile,
+        alpha=0.4, color = l.get_color())
+ax.axvline(x=top_interface, color='k', linestyle=':')
+ax.axvline(x=bot_interface, color='k', linestyle=':')
+ax.set_xlabel(r"Reaction Coordinate (nm)")
+ax.set_ylabel("Resistance (sec/cm$^2$)")
+plot_ay.tidyUp(fig, ax, tightLayoutArgs={}, gridArgs={'axis':'y'})
+fig.savefig('resistance_profile_logbootstrap.png', transparent=True)
+plt.close(fig)
