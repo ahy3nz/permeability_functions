@@ -6,12 +6,14 @@ import matplotlib.pyplot as plt
 import parmed.unit as u
 import pdb
 import permeability_functions.misc as misc
-matplotlib.rcParams['axes.labelsize']=24
-matplotlib.rcParams['ytick.labelsize']=20
-matplotlib.rcParams['xtick.labelsize']=20
+import plot_ay
+plot_ay.setDefaults()
+#matplotlib.rcParams['axes.labelsize']=24
+#matplotlib.rcParams['ytick.labelsize']=20
+#matplotlib.rcParams['xtick.labelsize']=20
 
 # So far this just looks at the absolute coordiante systems
-ylim = [1e-7, 1e-2]
+ylim = [1e-8, 1e-2]
 felim = [0,12]
 
 
@@ -237,5 +239,6 @@ for ytick in ax2.get_yticklabels():
     ytick.set_color(second_color)
 
 ax2.set_ylabel(r"Diffusion (cm$^2$/sec)", color=second_color)
+plot_ay.tidyUp(fig, ax, tightLayoutArgs={}, gridArgs={'axis':'y'})
 fig.tight_layout()
 fig.savefig('stacked_profiles.png',transparent=True)
