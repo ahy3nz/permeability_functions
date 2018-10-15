@@ -15,18 +15,14 @@ def main():
     #all_sweeps = [thing for thing in os.listdir() if os.path.isdir(thing) and 'sweep2' not in thing and 'sweep8' not in thing and 'sweep6' not in thing and '__pycache__' not in thing]
     all_sweeps = [thing for thing in os.listdir() if os.path.isdir(thing) and '__pycache__' not in thing]
     n_sims = 6
-    reaction_coordinates = np.loadtxt('z_windows.out') * u.nanometer
-    n_windows = len(reaction_coordinates)
-    window_forces = np.zeros(n_windows) 
-    window_facf_integrals = np.zeros(n_windows)
     df = pd.DataFrame()
     for sweep in all_sweeps:
         os.chdir(os.path.join(curr_dir, sweep))
-        (reaction_coordinate, fe_profile) = (np.loadtxt('free_energy_profile.dat')[:,0],
+        (reaction_coordinates, fe_profile) = (np.loadtxt('free_energy_profile.dat')[:,0],
                                             np.loadtxt('free_energy_profile.dat')[:,1])
 
         diffusion_profile = np.loadtxt('diffusion_profile.dat')[:,1]
-        reaction_coordinate *=  u.nanometer
+        reaction_coordinates *=  u.nanometer
         fe_profile *= u.kilocalorie/ (u.mole)
         diffusion_profile *= (u.centimeter**2)/u.second
         res_profile, res_integral = thermo_functions.compute_resistance_profile(
