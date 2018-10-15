@@ -13,6 +13,27 @@ plot_ay.setDefaults()
 #matplotlib.rcParams['ytick.labelsize']=20
 #matplotlib.rcParams['xtick.labelsize']=20
 
+def _fill_array(myarray, rxn_coordinates):
+    """ Because of the way equilibration protocol and how lammps handles fixes,
+    some tracers are constraied to windows outside the box, causing lmp to fail.
+    The solution is generaly to exclude that tracer/window in that particular
+    sweep. However, this means some sweeps will include extreme windows,
+    and others will not. This code attempts to 'filll in' the non-sampled windows
+    by just putting np.nan in their place. 
+    This helps align the arrays such that they all have the same windows, 
+    and then all the statistics are done by excluding the np.nan values"""
+
+    threshold = 0.1
+    for i, coord in enumerate(rxn_coordinates):
+        if i < myarray.shape[0]:
+            if abs(myarray[i,0] - coord) > threshold:
+                myarray = np.insert(myarray, i, [coord, np.nan], axis=0)
+        else:
+            myarray = np.insert(myarray, i, [coord, np.nan], axis=0)
+
+    return myarray
+
+
 # So far this just looks at the absolute coordiante systems
 ylim = [1e-8, 1e-2]
 felim = [0,12]
@@ -28,23 +49,34 @@ top_interface = np.nanmean(traj.xyz[0, top_interface_atoms,2])
 bot_interface = np.nanmean(traj.xyz[0, bot_interface_atoms,2])
 
 
-#all_sweeps = [thing for thing in os.listdir() if os.path.isdir(thing) and 'sweep2' not in thing and 'sweep8' not in thing and 'sweep6' not in thing and '__pycache__' not in thing]
-all_sweeps = [thing for thing in os.listdir() if os.path.isdir(thing) and '__pycache__' not in thing]
+all_nums = np.arange(0,4, dtype=int)
+all_sweeps = ['sweep{}'.format(num) for num in all_nums]
 all_fe_profiles = []
 all_diff_profiles = []
 all_resist_profiles = []
 rxn_coordinates = np.loadtxt('z_windows.out')
 for sweep in all_sweeps:
     if os.path.isfile('{}/resistance_profile.dat'.format(sweep)):
-        fe_profile = np.loadtxt('{}/free_energy_profile.dat'.format(sweep))[:,1]
-        diffusion_profile = np.loadtxt('{}/diffusion_profile.dat'.format(sweep))[:,1]
-        resistance_profile = np.loadtxt('{}/resistance_profile.dat'.format(sweep))[:,1]
+        fe_profile = np.loadtxt('{}/free_energy_profile.dat'.format(sweep))
+        diffusion_profile = np.loadtxt('{}/diffusion_profile.dat'.format(sweep))
+        resistance_profile = np.loadtxt('{}/resistance_profile.dat'.format(sweep))
+
+        if diffusion_profile.shape[0] != rxn_coordinates.shape[0]:
+            diffusion_profile = _fill_array(diffusion_profile, rxn_coordinates)
+            fe_profile = _fill_array(fe_profile, rxn_coordinates)
+            resistance_profile = _fill_array(resistance_profile, rxn_coordinates)
+
+        diffusion_profile = diffusion_profile[:,1]
+        fe_profile = fe_profile[:,1]
+        resistance_profile = resistance_profile[:,1]
+
         if (diffusion_profile[0]) > 1:
             diffusion_profile *= (u.nanometer**2)/u.second
             resistance_profile *= u.second/(u.nanometer**2)
         else:
             diffusion_profile *= (u.centimeter**2)/u.second
             resistance_profile *= (u.second)/(u.centimeter**2)
+       
         diff_profile = diffusion_profile.in_units_of(u.centimeter**2/u.second)
         diff_profile = diff_profile._value
         resist_profile = resistance_profile.in_units_of(u.second/(u.centimeter**2))
