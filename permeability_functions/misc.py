@@ -21,6 +21,8 @@ def validate_quantity_type(array, desired_unit):
     except IndexError:
         pass
 
+    array = array.unit * np.array([val for val in array._value 
+                                    if not np.isnan(val)])
     return array
 
 def symmetrize(data, zero_boundary_condition=False):
