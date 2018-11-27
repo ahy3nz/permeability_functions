@@ -318,10 +318,10 @@ ax2.set_ylim(ylim)
 for ytick in ax2.get_yticklabels():
     ytick.set_color(second_color)
 
-ax.axvline(x=top_interface, color='k', linestyle=':')
-ax.axvline(x=bot_interface, color='k', linestyle=':')
+#ax.axvline(x=top_interface, color='k', linestyle=':')
+#ax.axvline(x=bot_interface, color='k', linestyle=':')
 ax2.set_ylabel(r"Diffusion (cm$^2$/sec)", color=second_color)
-plot_ay.tidyUp(fig, ax, tightLayoutArgs={}, gridArgs={'axis':'y'})
+plot_ay.tidyUp(fig, ax, tightLayoutArgs={}, gridArgs={})
 fig.tight_layout()
 fig.savefig('stacked_profiles.png',transparent=True)
 plt.close(fig)
@@ -332,10 +332,10 @@ ax.fill_between(rxn_coordinates,
         bootstrap_resist_profile - bootstrap_resist_err_profile,
         bootstrap_resist_profile + bootstrap_resist_err_profile,
         alpha=0.4, color = l.get_color())
-ax.axvline(x=top_interface, color='k', linestyle=':')
-ax.axvline(x=bot_interface, color='k', linestyle=':')
+#ax.axvline(x=top_interface, color='k', linestyle=':')
+#ax.axvline(x=bot_interface, color='k', linestyle=':')
 ax.set_xlabel(r"Reaction Coordinate (nm)")
 ax.set_ylabel("Resistance (sec/cm$^2$)")
-plot_ay.tidyUp(fig, ax, tightLayoutArgs={}, gridArgs={'axis':'y'})
+plot_ay.tidyUp(fig, ax, tightLayoutArgs={}, gridArgs={})
 fig.savefig('resistance_profile_logbootstrap.png', transparent=True)
 plt.close(fig)
