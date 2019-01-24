@@ -22,9 +22,9 @@ def main():
                                             np.loadtxt('free_energy_profile.dat')[:,1])
 
         diffusion_profile = np.loadtxt('diffusion_profile.dat')[:,1]
-        reaction_coordinates *=  u.nanometer
-        fe_profile *= u.kilocalorie/ (u.mole)
-        diffusion_profile *= (u.centimeter**2)/u.second
+        reaction_coordinates =  reaction_coordinates * u.nanometer
+        fe_profile = fe_profile * u.kilocalorie/ (u.mole)
+        diffusion_profile = diffusion_profile * (u.centimeter**2)/u.second
         res_profile, res_integral = thermo_functions.compute_resistance_profile(
                                             fe_profile, 
                                             diffusion_profile,
