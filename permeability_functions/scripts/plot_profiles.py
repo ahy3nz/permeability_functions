@@ -71,11 +71,11 @@ for sweep in all_sweeps:
         resistance_profile = resistance_profile[:,1]
 
         if (diffusion_profile[0]) > 1:
-            diffusion_profile *= (u.nanometer**2)/u.second
-            resistance_profile *= u.second/(u.nanometer**2)
+            diffusion_profile = diffusion_profile * (u.nanometer**2)/u.second
+            resistance_profile = resistance_profile * u.second/(u.nanometer**2)
         else:
-            diffusion_profile *= (u.centimeter**2)/u.second
-            resistance_profile *= (u.second)/(u.centimeter**2)
+            diffusion_profile = diffusion_profile * (u.centimeter**2)/u.second
+            resistance_profile = resistance_profile * (u.second)/(u.centimeter**2)
        
         diff_profile = diffusion_profile.in_units_of(u.centimeter**2/u.second)
         diff_profile = diff_profile._value

@@ -11,7 +11,7 @@ import simtk.unit as u
 def main():
     all_sweeps = [thing for thing in os.listdir() is os.path.isdir(thing) and 'cache' not in thing]
     curr_dir = os.getcwd()
-    n_sims = 16
+    n_sims = 6
     for sweep in all_sweeps:
         print(sweep)
         os.chdir(os.path.join(curr_dir, sweep))
